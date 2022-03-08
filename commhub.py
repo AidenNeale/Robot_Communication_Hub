@@ -81,10 +81,10 @@ class CommHub:
     :param period: float. Time between calls to CommHub.forward_packets in seconds
     '''
     def auto_forward(self, period):
-        print("Forwarding Thread Initialised...")
-        while self.alive:
-            self.forward_packets()
-            time.sleep(period)
+      print("Forwarding Thread Initialised...")
+      while self.alive:
+        self.forward_packets()
+        time.sleep(period)
 
 
     '''
@@ -154,7 +154,7 @@ class CommHub:
 
     '''
     PRIVATE
-    Send packets to a destination
+    Send packets to a destination with range and bearing incorporated
     :param destination: the id of the robot to send the packages to
     :param packets: a list of Packet objects, or just a single Packet
     '''
