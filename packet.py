@@ -84,19 +84,19 @@ class Packet:
             print('Pos ({},{},{}) angle {} of {}'.format(x,y,z,theta,sender_id) )
             tot = struct.calcsize('=H4f')
             msgs = []
-            # while (tot < MSG_SIZE):
-            #     try:
-            #         msg_size = struct.unpack_from('H', m, tot)[0]
-            #         tot += 2
-            #     except struct.error(e):
-            #         print(e)
-            #         return False
-            #     if msg_size == 0:
-            #         break
-            #     msgs.append(m[tot:tot+msg_size])
+            while (tot < MSG_SIZE):
+                try:
+                    msg_size = struct.unpack_from('H', m, tot)[0]
+                    tot += 2
+                except struct.error(e):
+                    print(e)
+                    return False
+                if msg_size == 0:
+                    break
+                msgs.append(m[tot:tot+msg_size])
 
-            #     tot += msg_size
-                #print('rcv msg from {} size {} tot {}'.format(sender_id, msg_size, tot))
+                tot += msg_size
+                print('rcv msg from {} size {} tot {}'.format(sender_id, msg_size, tot))
             return Packet(x, y, z, sender_id, msgs, received_time=time.time(), addr=addr)
         except:
             return False
