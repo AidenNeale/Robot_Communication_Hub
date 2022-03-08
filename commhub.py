@@ -6,110 +6,11 @@ import numpy as np
 from os import urandom
 from collections import defaultdict
 
-MSG_SIZE = 500
+from packet import Packet
 
 
 def wrap_angle(angle):
     return ((angle + np.pi) % (2 * np.pi) - np.pi)
-
-
-class Packet:
-    '''
-    PRIVATE
-    Create a Packet to be sent over a socket
-    :params x, y, z: absolute coordinates of sender
-    :param sender_id: comm_id of sender
-    :param msgs: list of bytes objects. Each bytes object is fed directly to the buzz script using feed_buzz_message
-    '''
-
-    def __init__(self, x, y, z, sender_id, msgs=[], theta=0, received_time=0, addr=('0.0.0.0', 4242)):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.theta = theta
-        self.comm_id = sender_id
-        self.msgs = msgs
-        self.received_time = received_time
-        self.addr = addr
-
-    def set_rb(self, rng, bearing, elevation):
-        self.x = rng
-        self.y = bearing
-        self.z = elevation
-
-    '''
-    PRIVATE
-    Convert packet to a bytes object containing all the information.
-
-    Contents:
-        2 bytes comm_id
-        4 bytes x
-        4 bytes y
-        4 bytes z
-        4 bytes theta
-        for each message {
-            2 bytes message length (n)
-            n bytes message
-        }
-        4 bytes (0000)
-
-    :return b_string: bytes object representing entire packet
-    '''
-
-    def byte_string(self):
-        b_string = struct.pack('=H4f', int(self.comm_id), float(
-            self.x), float(self.y), float(self.z), float(self.theta))
-        for msg in self.msgs:
-            b_string += struct.pack('H', len(msg))
-            b_string += msg
-        b_string += struct.pack('I', 0)
-        while len(b_string) < MSG_SIZE:
-            b_string += struct.pack('B', 0)
-        return b_string
-
-    '''
-    PRIVATE
-    Create a packet from a Kh4 socket
-    Block until a string of bytes comes in, and unpack these bytes into a new Packet object.
-    The incomming bytes are in the form described in the documentation for Packet.byte_string
-    :param s: socket object
-    :return: Packet object or False if any socket.error occured
-    '''
-    @staticmethod
-    def from_socket(s):
-        addr = ('0.0.0.0', 4242)
-        try:
-            try:
-                m, addr = s.recvfrom(MSG_SIZE)
-                print(f"m={m} -=- addr={addr}")
-            except:
-                return False
-
-            if len(m) == 0:
-                # The socket is broken
-                return False
-
-            # Process the message
-            sender_id, x, y, z, theta = struct.unpack_from('=H4f', m)
-            print('Pos ({},{},{}) angle {} of {}'.format(x,y,z,theta,sender_id) )
-            tot = struct.calcsize('=H4f')
-            msgs = []
-            # while (tot < MSG_SIZE):
-            #     try:
-            #         msg_size = struct.unpack_from('H', m, tot)[0]
-            #         tot += 2
-            #     except struct.error(e):
-            #         print(e)
-            #         return False
-            #     if msg_size == 0:
-            #         break
-            #     msgs.append(m[tot:tot+msg_size])
-
-            #     tot += msg_size
-                #print('rcv msg from {} size {} tot {}'.format(sender_id, msg_size, tot))
-            return Packet(x, y, z, sender_id, msgs, received_time=time.time(), addr=addr)
-        except:
-            return False
 
 
 class CommHub:
@@ -155,6 +56,7 @@ class CommHub:
         self.received_thread = Thread(target=self.receive, name="Receiver")
         self.received_thread.start()
 
+
     '''
     PRIVATE
     New thread that blocks until new packet comes. Packets are added to self.packets
@@ -162,8 +64,8 @@ class CommHub:
 
     def receive(self):
         print("Receiving Thread Initialised...")  # Debug
-        while self.alive:
-            p = Packet.from_socket(self.s)
+        while self.alive: # While Comm Hub Alive
+            p = Packet.from_socket(self.s) # Read Packet from Socket
             print(p)
             # Update IP/id database
             self.id2ip[p.comm_id] = p.addr
@@ -176,63 +78,23 @@ class CommHub:
             else:
                 break
 
-    '''
-    PRIVATE
-    Send packets to a destination
-    :param destination: the id of the robot to send the packages to
-    :param packets: a list of Packet objects, or just a single Packet
-    '''
-
-    def send_to(self, destination, packets, sender):
-        try:
-            packets[0]
-        except (AttributeError, TypeError):
-            self.s.sendto(packets.byte_string(), self.id2ip[destination])
-            print(" comm packet sender {} receiver {}".format(sender,destination))
-            return
-        # m = bytes()
-        for p in packets:
-            m = p.byte_string()
-            self.s.sendto(m, self.id2ip[destination])
-
-    '''
-    PRIVATE
-    Send packets to a destination
-    :param destination: the id of the robot to send the packages to
-    :param packets: a list of Packet objects, or just a single Packet
-    '''
-
-    def send_to_with_rb(self, destination, packets, rel_rb):
-        try:
-            packets[0]
-        except (AttributeError, TypeError):
-            packets.set_rb(rel_rb[0], rel_rb[1], rel_rb[2])
-            self.s.sendto(packets.byte_string(), self.id2ip[destination])
-            return
-        # m = bytes()
-        for p in packets:
-            p.set_rb(rel_rb[0], rel_rb[1], rel_rb[2])
-            m = p.byte_string()
-            # print("Time take to send {} sender {} receiver {}".format(time.time()-p.received_time,sender,receiver))
-            self.s.sendto(m, self.id2ip[destination])
 
     '''
     PRIVATE
     Automatically call CommHub.forward_packets at a certain frequency
     :param period: float. Time between calls to CommHub.forward_packets in seconds
     '''
-
     def auto_forward(self, period):
         print("Forwarding Thread Initialised...")
         while self.alive:
             self.forward_packets()
             time.sleep(period)
 
+
     '''
     Keep the communication flowing between robots.
     All information shared between robots, and any updates to positions are not sent unless this function is called.
     '''
-
     def forward_packets(self):
         # For all known robots, get addresses and ids
         for id1, addr1 in self.id2ip.items():
@@ -248,7 +110,6 @@ class CommHub:
             # Cycle through all other robots and forward the packets
             for id2, addr2 in self.id2ip.items():
                 try:
-
                     # Compute relative vector and distance
                     rel_vector = self.locs[id1][:-1] - self.locs[id2][:-1]
                     distance = np.linalg.norm(rel_vector)
@@ -276,26 +137,58 @@ class CommHub:
                 except KeyError as e:
                     pass  # print("No locs for Robot {}".format(id2))
 
-    '''
-    Update the position of the specified robot.
-    :param robot_id: int. the id of the robot whose position is to be updated
-    :param loc: list, tuple, or numpy.array. The updated position of the robot
-    :param yaw float yaw euiler angle
-    :return: bool. True if update was successful
-    '''
-
-    def update_position(self, robot_id, loc, yaw):
-        self.locs[int(robot_id)] = np.append(np.array(loc), yaw)
-        print("Robot {} pos {}".format(robot_id, self.locs[robot_id]))
-        return True
-
 
     '''
-    Destroy the Communication Hub, and all its clients
-    Called when CommHub.forward_packets encounters an error
+    PRIVATE
+    Send packets to a destination
+    :param destination: the id of the robot to send the packages to
+    :param packets: a list of Packet objects, or just a single Packet
+    '''
+    def send_to(self, destination, packets, sender):
+        try:
+            packets[0]
+        except (AttributeError, TypeError):
+            self.s.sendto(packets.byte_string(), self.id2ip[destination])
+            print(" comm packet sender {} receiver {}".format(sender,destination))
+            return
+        # m = bytes()
+        for p in packets:
+            m = p.byte_string()
+            self.s.sendto(m, self.id2ip[destination])
+
+
+    '''
+    PRIVATE
+    Send packets to a destination
+    :param destination: the id of the robot to send the packages to
+    :param packets: a list of Packet objects, or just a single Packet
     '''
 
-    def destroy(self):
-      self.alive = False
-      self.s.sendto(urandom(MSG_SIZE), ('127.0.0.1', 4242))
-      self.s.close()
+    def send_to_with_rb(self, destination, packets, rel_rb):
+        try:
+            packets[0]
+        except (AttributeError, TypeError):
+            packets.set_rb(rel_rb[0], rel_rb[1], rel_rb[2])
+            self.s.sendto(packets.byte_string(), self.id2ip[destination])
+            return
+        # m = bytes()
+        for p in packets:
+            p.set_rb(rel_rb[0], rel_rb[1], rel_rb[2])
+            m = p.byte_string()
+            # print("Time take to send {} sender {} receiver {}".format(time.time()-p.received_time,sender,receiver))
+            self.s.sendto(m, self.id2ip[destination])
+
+
+
+    # '''
+    # Update the position of the specified robot.
+    # :param robot_id: int. the id of the robot whose position is to be updated
+    # :param loc: list, tuple, or numpy.array. The updated position of the robot
+    # :param yaw float yaw euiler angle
+    # :return: bool. True if update was successful
+    # '''
+
+    # def update_position(self, robot_id, loc, yaw):
+    #     self.locs[int(robot_id)] = np.append(np.array(loc), yaw)
+    #     print("Robot {} pos {}".format(robot_id, self.locs[robot_id]))
+    #     return True
