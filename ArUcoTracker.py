@@ -55,6 +55,8 @@ class ArUcoTracker:
     self.arenaMinX = 0
     self.arenaMinY = 0
 
+    self.arenaMeasurement = 0.88 # This is relevant to the distance of ArUco Tags defining the Robot Arena in m
+
     self.cap = self.init_camera()
     self.socket = self.init_socket()
     self.scale = self.calculate_scale()
@@ -65,11 +67,9 @@ class ArUcoTracker:
     self.sendCoordinates_thread = Thread(target=self.send_coordinates, name="Send Coordinates")
     self.sendCoordinates_thread.start()
 
-  # Change Screen Resolution
-  def change_res(self, cap, resolution) -> None:
-    cap.set(3, resolution[0])
-    cap.set(4, resolution[1])
+  '''
 
+  '''
   def init_camera(self) -> cv2.VideoCapture:
     # Open Video Capture with Chosen Camera on appropriate USB
     cap = cv2.VideoCapture(self.CHOSEN_CAMERA)
@@ -86,12 +86,24 @@ class ArUcoTracker:
     return cap
 
 
-  def init_socket(self):
+  '''
+
+  '''
+  def change_res(self, cap, resolution) -> None:
+    cap.set(3, resolution[0])
+    cap.set(4, resolution[1])
+
+  '''
+
+  '''
+  def init_socket(self) -> socket.socket:
     return socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
       # Send to server using created UDP socket
 
 
+  '''
 
+  '''
   def calculate_scale(self) -> float:
     oneMetreScaleFactor = 0
 
@@ -146,8 +158,7 @@ class ArUcoTracker:
         self.arenaMaxY, self.arenaMinY = bottomMinX, bottomMinY
 
         # Calculates the number of pixels in 1 Metre
-        oneMetreScaleFactor = (topMaxY - bottomMinY)
-
+        oneMetreScaleFactor = (topMaxY - bottomMinY) / self.arenaSize
 
         # Cleans up Window created
         cv2.destroyAllWindows()
@@ -160,20 +171,9 @@ class ArUcoTracker:
         cv2.destroyAllWindows()
         return -1
 
-  # Scales any coordinates to convert pixels to metres
-  def scale_coordinates(self, x, y):
-    scaledX = (x - self.arenaMinX) / self.scale
-    scaledY = (y - self.arenaMinY) / self.scale
-    scaledZ = 0
-    return (scaledX, scaledY, scaledZ)
+  '''
 
-  # Calculates the centre of the robot by taking the averages of the Tag Corners
-  def get_robot_centre(self, topLeft, bottomRight):
-    centreX = (abs(topLeft[0]+bottomRight[0])/2)
-    centreY = (abs(topLeft[1]+bottomRight[1])/2)
-    return (centreX, centreY)
-
-
+  '''
   def track_robots(self):
     while True:
       ret, frame = self.cap.read()
@@ -205,12 +205,35 @@ class ArUcoTracker:
           # Scales the Robots Centre Point to Metres
           coordinates = self.scale_coordinates(centreX, centreY)
           print(f"Robot {markerID} is positioned: {coordinates}")
+
       # Display the resulting frame
       cv2.imshow('Robot_Detection', frame)
       # Waits for exit of the program
       if cv2.waitKey(1) == ord('q'):
         sys.exit()
 
+  '''
+  Scales any coordinates to convert pixels to metres
+  '''
+  def scale_coordinates(self, x, y):
+    scaledX = (x - self.arenaMinX) / self.scale
+    scaledY = (y - self.arenaMinY) / self.scale
+    scaledZ = 0
+    return (scaledX, scaledY, scaledZ)
+
+  '''
+  Calculates the centre of the robot by taking the averages of the Tag Corners
+  '''
+  def get_robot_centre(self, topLeft, bottomRight):
+    centreX = (abs(topLeft[0]+bottomRight[0])/2)
+    centreY = (abs(topLeft[1]+bottomRight[1])/2)
+    return (centreX, centreY)
+
+
+
+  '''
+
+  '''
   def send_coordinates():
     pass # Do something
 
