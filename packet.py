@@ -61,7 +61,7 @@ class Packet:
     PRIVATE
     Create a packet from a Kh4 socket
     Block until a string of bytes comes in, and unpack these bytes into a new Packet object.
-    The incomming bytes are in the form described in the documentation for Packet.byte_string
+    The incoming bytes are in the form described in the documentation for Packet.byte_string
     :param s: socket object
     :return: Packet object or False if any socket.error occured
     '''
