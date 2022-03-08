@@ -62,7 +62,7 @@ class ArUcoTracker:
 
     self.trackRobots_thread = Thread(target=self.track_robots, name="Track Robots")
     self.trackRobots_thread.start()
-    self.sendCoordinates_thread = Thread(target=self.send_Coordinates, name="Send Coordinates")
+    self.sendCoordinates_thread = Thread(target=self.send_coordinates, name="Send Coordinates")
     self.sendCoordinates_thread.start()
 
   # Change Screen Resolution
@@ -139,7 +139,7 @@ class ArUcoTracker:
           bottomMinX = min(positionMarkers[indexes]['bottomLeft'][0], bottomMinX)
           bottomMinY = min(positionMarkers[indexes]['topLeft'][1], bottomMinY)
           bottomMinY = min(positionMarkers[indexes]['topRight'][1], bottomMinY)
-        print(f"Highest Coordinate: {topMaxX}: {topMaxY}, Lowest Coordinate: {bottomMinX}:{bottomMinY}") # Debug
+        print(f"Highest Coordinate: {topMaxX}: {topMaxY}, Lowest Coordinate: {bottomMinX}: {bottomMinY}") # Debug
 
         # Set global values to keep track of arena Coordinates
         self.arenaMaxX, self.arenaMaxY = topMaxX, topMaxY
@@ -211,6 +211,8 @@ class ArUcoTracker:
       if cv2.waitKey(1) == ord('q'):
         sys.exit()
 
+  def send_coordinates():
+    pass # Do something
 
 
 '''
