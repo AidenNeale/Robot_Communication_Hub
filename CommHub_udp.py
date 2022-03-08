@@ -9,14 +9,14 @@ from commhub import CommHub
 # Parameters for the Buzz ComHub
 FORWARD_FREQ = 50  # Hz
 
-CAM_IP = '127.0.0.1'
-HUB_IP = '127.0.0.1'
+# This is the IP address in which the Camera and Communication Hub are hosted
+SERVER_IP = '144.32.175.138'
 
 
 if __name__ == '__main__':
 
-  comm_hub = CommHub(forward_freq=FORWARD_FREQ)
-  robotTracker = ArUcoTracker()
+  comm_hub = CommHub(forward_freq=FORWARD_FREQ, host=SERVER_IP)
+  # robotTracker = ArUcoTracker()
   try:
     while True:
       time.sleep(0.1)
