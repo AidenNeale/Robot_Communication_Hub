@@ -27,7 +27,7 @@ class CommHub:
     :param port: int. The port of the CommHub. PORT default is 8000
     '''
 
-    def __init__(self, forward_freq=None, neighbor_distance=1.7, host='127.0.0.1', port=4242):
+    def __init__(self, forward_freq=None, neighbor_distance=1.7, host='144.32.175.138', port=4242):
         self.alive = True
         self.locs = {}  # comm_id : np.array()
         self.neighbor_distance = neighbor_distance
@@ -106,7 +106,7 @@ class CommHub:
             self.packets_lock.release()
             if len(tmppackets) == 0:
                 tmppackets = [Packet(0.0, 0.0, 0.0, id1)]
-            print("Reaching Forward_Packets")
+            # print("Reaching Forward_Packets")
             # Cycle through all other robots and forward the packets
             for id2, addr2 in self.id2ip.items():
                 try:
