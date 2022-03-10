@@ -64,9 +64,9 @@ class CommHub:
             received_packet = Packet.from_socket(self.socket) # Read Packet from Socket
             # Update IP/id database
             self.id2ip[received_packet.comm_id] = received_packet.addr
-
+            print(self.id2ip)
             if received_packet:
-                print("Received packet from Robot {}".format(received_packet.comm_id))  # Debug
+                # print("Received packet from Robot {}".format(received_packet.comm_id))  # Debug
                 self.packets_lock.acquire()
                 self.packets[received_packet.comm_id].append(received_packet)
                 self.packets_lock.release()
