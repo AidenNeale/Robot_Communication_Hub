@@ -71,7 +71,7 @@ class Packet:
         try:
             try:
                 m, addr = s.recvfrom(MSG_SIZE)
-                print(f"m={m} -=- addr={addr}")
+                # print(f"m={m} -=- addr={addr}")
             except:
                 return False
 
@@ -81,7 +81,7 @@ class Packet:
 
             # Process the message
             sender_id, x, y, z, theta = struct.unpack_from('=H4f', m)
-            print('Pos ({},{},{}) angle {} of {}'.format(x,y,z,theta,sender_id) )
+            print('Pos ({},{},{}) angle {} of ID: {}'.format(x,y,z,theta,sender_id) )
             tot = struct.calcsize('=H4f')
             msgs = []
             while (tot < MSG_SIZE):
