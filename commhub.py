@@ -62,7 +62,6 @@ class CommHub:
         print("Receiving Thread Initialised...")  # Debug
         while self.alive: # While Comm Hub Alive
             received_packet = Packet.from_socket(self.socket) # Read Packet from Socket
-            print(received_packet)
             # Update IP/id database
             self.id2ip[received_packet.comm_id] = received_packet.addr
 
@@ -89,7 +88,8 @@ class CommHub:
 
     '''
     Keep the communication flowing between robots.
-    All information shared between robots, and any updates to positions are not sent unless this function is called.
+    All information shared between robots, and any updates to positions
+    are not sent unless this function is called.
     '''
     def forward_packets(self):
         # For all known robots, get addresses and ids
@@ -101,7 +101,7 @@ class CommHub:
             self.packets[robot_id1] = []
             self.packets_lock.release()
             if len(tmppackets) == 0:
-                tmppackets = [Packet(0.0, 0.0, 0.0, robot_id1)]
+              tmppackets = [Packet(0.0, 0.0, 0.0, robot_id1)]
             # Cycle through all other robots and forward the packets
             for robot_id2, addr2 in self.id2ip.items():
                 try:
