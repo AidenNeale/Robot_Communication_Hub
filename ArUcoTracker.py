@@ -1,10 +1,13 @@
 from threading import Thread, Lock
 
-import cv2
 import numpy as np
 import socket
 import sys
 import time
+
+import cv2
+
+from packet import Packet
 
 class ArUcoTracker:
   ARUCO_DICT = {
@@ -36,8 +39,8 @@ class ArUcoTracker:
     "320x240":   [320, 240],
     "352x288":   [352, 288],
     "640x480":   [640, 480],
-    "1024x768":  [1024, 7687],
-    "1280x1024": [1280, 1024]
+    "1024x768":  [1024, 768],
+    "1280x720": [1280, 720]
   }
 
   def __init__(self, arUco_type="DICT_5X5_50", HOST = '127.0.0.1', PORT = '4242',
@@ -47,8 +50,11 @@ class ArUcoTracker:
     self.DESTINATION = (HOST, PORT)
     self.POSITION_MARKERS = POSITION_MARKERS
 
+    self.packets_lock = Lock()
+
     self.arucoDict = cv2.aruco.Dictionary_get(self.ARUCO_DICT[arUco_type])
     self.arucoParams = cv2.aruco.DetectorParameters_create()
+    self.id2coords = {}
 
     self.arenaMaxX = 0
     self.arenaMaxY = 0
@@ -81,7 +87,7 @@ class ArUcoTracker:
       exit()
 
     # Change Resolution of the frame to 1024X768
-    self.change_res(cap, self.POSSIBLE_RESOLUTIONS["640x480"])
+    self.change_res(cap, self.POSSIBLE_RESOLUTIONS["1280x720"])
     time.sleep(1.5)
     return cap
 
@@ -134,7 +140,7 @@ class ArUcoTracker:
 
         # At this stage, position_markers will have stored the corners of the
         # ArUco Tags
-        print(f"{positionMarkers}") # Debug
+        # print(f"{positionMarkers}") # Debug
         topMaxX, topMaxY = float('-inf'), float('-inf')
         bottomMinX, bottomMinY = float('inf'), float('inf')
 
@@ -158,7 +164,7 @@ class ArUcoTracker:
         self.arenaMaxY, self.arenaMinY = bottomMinX, bottomMinY
 
         # Calculates the number of pixels in 1 Metre
-        oneMetreScaleFactor = (topMaxY - bottomMinY) / self.arenaSize
+        oneMetreScaleFactor = (topMaxY - bottomMinY) / self.arenaMeasurement
 
         # Cleans up Window created
         cv2.destroyAllWindows()
@@ -204,7 +210,10 @@ class ArUcoTracker:
 
           # Scales the Robots Centre Point to Metres
           coordinates = self.scale_coordinates(centreX, centreY)
-          print(f"Robot {markerID} is positioned: {coordinates}")
+          # print(f"Robot {markerID} is positioned: {coordinates}")
+          self.packets_lock.acquire()
+          self.id2coords[markerID] = coordinates
+          self.packets_lock.release()
 
       # Display the resulting frame
       cv2.imshow('Robot_Detection', frame)
@@ -234,9 +243,17 @@ class ArUcoTracker:
   '''
 
   '''
-  def send_coordinates():
-    pass # Do something
-
+  def send_coordinates(self):
+    while True:
+      readDictionary = self.id2coords.items()
+      for robotID, robotCoordinates in readDictionary:
+        # Send Packet to the Communication Hub for auto-forwarding onto robots
+        self.packets_lock.acquire()
+        packet = Packet(
+          robotCoordinates[0], robotCoordinates[1], robotCoordinates[2], robotID)
+        self.packets_lock.release()
+        msg = packet.byte_string()
+        self.socket.sendto(msg, self.DESTINATION)
 
 '''
   TODO:
