@@ -64,7 +64,7 @@ class CommHub:
             received_packet = Packet.from_socket(self.socket) # Read Packet from Socket
             # Update IP/id database
             self.id2ip[received_packet.comm_id] = received_packet.addr
-            print(self.id2ip)
+
             if received_packet:
                 # print("Received packet from Robot {}".format(received_packet.comm_id))  # Debug
                 self.packets_lock.acquire()
@@ -82,8 +82,8 @@ class CommHub:
     def auto_forward(self, period):
       print("Forwarding Thread Initialised...")
       while self.alive:
-        self.forward_packets()
         time.sleep(period)
+        self.forward_packets()
 
 
     '''
@@ -102,12 +102,16 @@ class CommHub:
             self.packets_lock.release()
             if len(tmppackets) == 0:
               tmppackets = [Packet(0.0, 0.0, 0.0, robot_id1)]
+
             # Cycle through all other robots and forward the packets
             for robot_id2, addr2 in self.id2ip.items():
                 try:
                     # Compute relative vector and distance
                     rel_vector = self.locs[robot_id1][:-1] - self.locs[robot_id2][:-1]
                     distance = np.linalg.norm(rel_vector)
+
+                    print(robot_id1)
+                    print(robot_id2)
 
                     # Send updated own location to the robot
                     if robot_id1 == robot_id2:
@@ -181,7 +185,7 @@ class CommHub:
     # :return: bool. True if update was successful
     # '''
 
-    # def update_position(self, robot_id, loc, yaw):
-    #     self.locs[int(robot_id)] = np.append(np.array(loc), yaw)
-    #     print("Robot {} pos {}".format(robot_id, self.locs[robot_id]))
-    #     return True
+    def update_position(self, robot_id, loc, yaw):
+        self.locs[int(robot_id)] = np.append(np.array(loc), yaw)
+        print("Robot {} pos {}".format(robot_id, self.locs[robot_id]))
+        return True
