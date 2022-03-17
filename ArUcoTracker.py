@@ -64,7 +64,7 @@ class ArUcoTracker:
     self.arenaMeasurement = 0.88 # This is relevant to the distance of ArUco Tags defining the Robot Arena in m
 
     self.cap = self.init_camera()
-    self.socket = self.init_socket()
+    self.socket = self.init_socket(HOST)
     self.scale = self.calculate_scale()
     print(f"Scaling Factor for 1m: {self.scale}")
 
@@ -73,10 +73,12 @@ class ArUcoTracker:
     self.sendCoordinates_thread = Thread(target=self.send_coordinates, name="Send Coordinates")
     self.sendCoordinates_thread.start()
 
-  '''
 
-  '''
+
   def init_camera(self) -> cv2.VideoCapture:
+    '''
+
+    '''
     # Open Video Capture with Chosen Camera on appropriate USB
     cap = cv2.VideoCapture(self.CHOSEN_CAMERA)
     if not cap.isOpened():
@@ -92,25 +94,30 @@ class ArUcoTracker:
     return cap
 
 
-  '''
 
-  '''
   def change_res(self, cap, resolution) -> None:
+    '''
+
+    '''
     cap.set(3, resolution[0])
     cap.set(4, resolution[1])
 
-  '''
 
-  '''
-  def init_socket(self) -> socket.socket:
-    return socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  def init_socket(self, HOST) -> socket.socket:
+    '''
+
+    '''
+    socketUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    socketUDP.bind((HOST, 50000)) # Assumes Camera and Server on same Network
+    return socketUDP
       # Send to server using created UDP socket
 
 
-  '''
 
-  '''
   def calculate_scale(self) -> float:
+    '''
+
+    '''
     oneMetreScaleFactor = 0
 
     while True:
@@ -177,10 +184,11 @@ class ArUcoTracker:
         cv2.destroyAllWindows()
         return -1
 
-  '''
 
-  '''
   def track_robots(self):
+    '''
+
+    '''
     while True:
       ret, frame = self.cap.read()
       if not ret:
@@ -221,19 +229,23 @@ class ArUcoTracker:
       if cv2.waitKey(1) == ord('q'):
         sys.exit()
 
-  '''
-  Scales any coordinates to convert pixels to metres
-  '''
+
+
   def scale_coordinates(self, x, y):
+    '''
+    Scales any coordinates to convert pixels to metres
+    '''
     scaledX = (x - self.arenaMinX) / self.scale
     scaledY = (y - self.arenaMinY) / self.scale
     scaledZ = 0
     return (scaledX, scaledY, scaledZ)
 
-  '''
-  Calculates the centre of the robot by taking the averages of the Tag Corners
-  '''
+
+
   def get_robot_centre(self, topLeft, bottomRight):
+    '''
+    Calculates the centre of the robot by taking the averages of the Tag Corners
+    '''
     centreX = (abs(topLeft[0]+bottomRight[0])/2)
     centreY = (abs(topLeft[1]+bottomRight[1])/2)
     return (centreX, centreY)
