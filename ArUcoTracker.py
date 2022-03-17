@@ -1,11 +1,11 @@
 from threading import Thread, Lock
 
 import numpy as np
-import socket
 import sys
 import time
 
 import cv2
+
 
 from packet import Packet
 
@@ -44,12 +44,12 @@ class ArUcoTracker:
   }
 
   def __init__(self, arUco_type="DICT_5X5_50", HOST = '127.0.0.1', PORT = '4242',
-                    CHOSEN_CAMERA = 2, POSITION_MARKERS = 0) -> None:
+                    CHOSEN_CAMERA = 2, POSITION_MARKERS = 0, CommHub = None) -> None:
 
     self.CHOSEN_CAMERA = CHOSEN_CAMERA
     self.DESTINATION = (HOST, PORT)
     self.POSITION_MARKERS = POSITION_MARKERS
-
+    self.CommHub = CommHub
     self.packets_lock = Lock()
 
     self.arucoDict = cv2.aruco.Dictionary_get(self.ARUCO_DICT[arUco_type])
@@ -64,7 +64,6 @@ class ArUcoTracker:
     self.arenaMeasurement = 0.88 # This is relevant to the distance of ArUco Tags defining the Robot Arena in m
 
     self.cap = self.init_camera()
-    self.socket = self.init_socket(HOST)
     self.scale = self.calculate_scale()
     print(f"Scaling Factor for 1m: {self.scale}")
 
@@ -101,16 +100,6 @@ class ArUcoTracker:
     '''
     cap.set(3, resolution[0])
     cap.set(4, resolution[1])
-
-
-  def init_socket(self, HOST) -> socket.socket:
-    '''
-
-    '''
-    socketUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    socketUDP.bind((HOST, 50000)) # Assumes Camera and Server on same Network
-    return socketUDP
-      # Send to server using created UDP socket
 
 
 
@@ -258,14 +247,11 @@ class ArUcoTracker:
   def send_coordinates(self):
     while True:
       readDictionary = self.id2coords.items()
-      for robotID, robotCoordinates in readDictionary:
-        # Send Packet to the Communication Hub for auto-forwarding onto robots
-        self.packets_lock.acquire()
-        packet = Packet(
-          robotCoordinates[0], robotCoordinates[1], robotCoordinates[2], robotID)
-        self.packets_lock.release()
-        msg = packet.byte_string()
-        self.socket.sendto(msg, self.DESTINATION)
+      try:
+        for robotID, robotCoordinates in readDictionary:
+          self.CommHub.update_position(robotID, robotCoordinates, 0)
+      except RuntimeError:
+        pass
 
 '''
   TODO:
