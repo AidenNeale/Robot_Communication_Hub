@@ -16,7 +16,7 @@ PORT = 4242
 if __name__ == '__main__':
 
   comm_hub = CommHub(forward_freq=FORWARD_FREQ, host=SERVER_IP, port=PORT)
-  robotTracker = ArUcoTracker(HOST=SERVER_IP, PORT=PORT)
+  robotTracker = ArUcoTracker(HOST=SERVER_IP, PORT=PORT, CommHub=comm_hub)
   try:
     while True:
       time.sleep(0.1)
