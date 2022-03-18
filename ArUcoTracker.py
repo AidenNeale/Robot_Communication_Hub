@@ -106,10 +106,10 @@ class ArUcoTracker:
 
     Parameters:
     -----------
-    cap -> Instance of CV2's Video Capture
-      ...
-    resolution -> 2-Element List of resolution settings: X x Y
-      ...
+    cap -> cv2.VideoCapture
+      Instance of CV2's Video Capture
+    resolution -> list
+      Resolution settings: [X, Y]
     '''
     cap.set(3, resolution[0])
     cap.set(4, resolution[1])
@@ -171,7 +171,6 @@ class ArUcoTracker:
           bottomMinX = min(positionMarkers[indexes]['bottomLeft'][0], bottomMinX)
           bottomMinY = min(positionMarkers[indexes]['topLeft'][1], bottomMinY)
           bottomMinY = min(positionMarkers[indexes]['topRight'][1], bottomMinY)
-        # print(f"Highest Coordinate: {topMaxX}: {topMaxY}, Lowest Coordinate: {bottomMinX}: {bottomMinY}") # Debug
 
         # Set global values to keep track of arena Coordinates
         self.arenaMaxX, self.arenaMaxY = topMaxX, topMaxY
@@ -194,7 +193,7 @@ class ArUcoTracker:
 
   def track_robots(self):
     '''
-
+    Tracks the positions of the ArUco Tags, and updates an ID: Coordinates Dictionary
     '''
     while True:
       ret, frame = self.cap.read()
@@ -256,6 +255,7 @@ class ArUcoTracker:
       Pixel Coordinate for the Y-Axis
 
     Returns:
+    ---------
     Coordinates -> list
       Returns a list of scaled coordinates with a Z-Axis assumed on a flat plane
     '''
