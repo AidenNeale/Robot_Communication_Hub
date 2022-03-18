@@ -110,13 +110,10 @@ class CommHub:
                     rel_vector = self.locs[robot_id1][:-1] - self.locs[robot_id2][:-1]
                     distance = np.linalg.norm(rel_vector)
 
-                    print(robot_id1)
-                    print(robot_id2)
-
                     # Send updated own location to the robot
                     if robot_id1 == robot_id2:
                         self.send_to(robot_id2, Packet(
-                            self.locs[robot_id1][0], self.locs[robot_id1][1], self.locs[robot_id1][2], robot_id1, theta=self.locs[robot_id1][3]), robot_id1)
+                            self.locs[robot_id1][0], self.locs[robot_id1][1], self.locs[robot_id1][2], robot_id1, theta=self.locs[robot_id1][3]))
 
                     # Only forward packets if within comms distance, in RAB format
                     else:  # if distance < self.neighbor_distance:
@@ -143,12 +140,12 @@ class CommHub:
     :param destination: the id of the robot to send the packages to
     :param packets: a list of Packet objects, or just a single Packet
     '''
-    def send_to(self, destination, packets, sender):
+    def send_to(self, destination, packets):
         try:
             packets[0]
         except (AttributeError, TypeError):
             self.socket.sendto(packets.byte_string(), self.id2ip[destination])
-            print(" comm packet sender {} receiver {}".format(sender,destination))
+            # print(" comm packet sender {} receiver {}".format(sender,destination))
             return
 
         for packet in packets:
@@ -187,5 +184,5 @@ class CommHub:
 
     def update_position(self, robot_id, loc, yaw):
         self.locs[int(robot_id)] = np.append(np.array(loc), yaw)
-        print("Robot {} pos {}".format(robot_id, self.locs[robot_id]))
+        # print("Robot {} pos {}".format(robot_id, self.locs[robot_id]))
         return True
