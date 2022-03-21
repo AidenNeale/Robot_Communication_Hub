@@ -94,46 +94,48 @@ class CommHub:
       Drives communication between robots. All information shared between robots, and any
       updates to positions are not sent unless this function is called
       '''
-      # For all known robots, get addresses and ids
-      for robot_id1, robot_addr1 in self.id2ip.items():
+      try:
+        # For all known robots, get addresses and ids
+        for robot_id1, robot_addr1 in self.id2ip.items():
 
-        # If there are packets from these robots, put them into a data structure
-        self.packets_lock.acquire()
-        tmppackets = self.packets[robot_id1][:]
-        self.packets[robot_id1] = []
-        self.packets_lock.release()
-        if len(tmppackets) == 0:
-          tmppackets = [Packet(0.0, 0.0, 0.0, robot_id1)]
+          # If there are packets from these robots, put them into a data structure
+          self.packets_lock.acquire()
+          tmppackets = self.packets[robot_id1][:]
+          self.packets[robot_id1] = []
+          self.packets_lock.release()
+          if len(tmppackets) == 0:
+            tmppackets = [Packet(0.0, 0.0, 0.0, robot_id1)]
 
-        # Cycle through all other robots and forward the packets
-        for robot_id2, addr2 in self.id2ip.items():
-          try:
-            # Compute relative vector and distance
-            rel_vector = self.locs[robot_id1][:-1] - self.locs[robot_id2][:-1]
-            distance = np.linalg.norm(rel_vector)
+          # Cycle through all other robots and forward the packets
+          for robot_id2, addr2 in self.id2ip.items():
+            try:
+              # Compute relative vector and distance
+              rel_vector = self.locs[robot_id1][:-1] - self.locs[robot_id2][:-1]
+              distance = np.linalg.norm(rel_vector)
 
-            # Send updated own location to the robot
-            if robot_id1 == robot_id2:
-              self.send_to(robot_id2, Packet(
-                self.locs[robot_id1][0], self.locs[robot_id1][1], self.locs[robot_id1][2], robot_id1, theta=self.locs[robot_id1][3]))
+              # Send updated own location to the robot
+              if robot_id1 == robot_id2:
+                self.send_to(robot_id2, Packet(
+                  self.locs[robot_id1][0], self.locs[robot_id1][1], self.locs[robot_id1][2], robot_id1, theta=self.locs[robot_id1][3]))
 
-            # Only forward packets if within comms distance, in RAB format
-            else:  # if distance < self.neighbor_distance:
-              # Compute azimuth (theta) and elevation (phi)
-              rel_theta = np.arctan2(rel_vector[1], rel_vector[0])
-              rel_phi = np.arctan2(rel_vector[2], np.linalg.norm(rel_vector[:2]))
+              # Only forward packets if within comms distance, in RAB format
+              else:  # if distance < self.neighbor_distance:
+                # Compute azimuth (theta) and elevation (phi)
+                rel_theta = np.arctan2(rel_vector[1], rel_vector[0])
+                rel_phi = np.arctan2(rel_vector[2], np.linalg.norm(rel_vector[:2]))
 
-              # convert angle to receivers coordinate
-              rel_theta = rel_theta - self.locs[robot_id2][3]
-              # Wrap angles
-              azimuth = rel_theta + 2*np.pi if rel_theta < 0. else rel_theta
-              elevation = rel_phi + 2*np.pi if rel_phi < 0. else rel_phi
+                # convert angle to receivers coordinate
+                rel_theta = rel_theta - self.locs[robot_id2][3]
+                # Wrap angles
+                azimuth = rel_theta + 2*np.pi if rel_theta < 0. else rel_theta
+                elevation = rel_phi + 2*np.pi if rel_phi < 0. else rel_phi
 
-              self.send_to_with_rb(robot_id2, tmppackets, np.array(
-                (distance*100.0, azimuth, elevation)))  # *100.0 to obtain [cm] on board
-          except KeyError as e:
-            pass  # print("No locs for Robot {}".format(robot_id2))
-
+                self.send_to_with_rb(robot_id2, tmppackets, np.array(
+                  (distance*100.0, azimuth, elevation)))  # *100.0 to obtain [cm] on board
+            except KeyError as e:
+              pass  # print("No locs for Robot {}".format(robot_id2))
+      except RuntimeError as e:
+        print("Caught Runtime Exception caused by robot IP appearing out of sync")
 
 
     def send_to(self, destination, packets):
