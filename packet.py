@@ -122,7 +122,7 @@ class Packet:
           msgs.append(msg[tot:tot+msg_size])
 
           tot += msg_size
-          print('rcv msg from {} size {} tot {}'.format(sender_id, msg_size, tot))
+          # print('rcv msg from {} size {} tot {}'.format(sender_id, msg_size, tot))
         return Packet(x, y, z, sender_id, msgs, received_time=time.time(), addr=addr)
       except:
         return False
