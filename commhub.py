@@ -127,7 +127,7 @@ class CommHub:
                 # convert angle to receivers coordinate
                 rel_theta = rel_theta - self.locs[robot_id2][3]
                 # Wrap angles
-                azimuth = rel_theta + 2*np.pi if rel_theta < 0. else rel_theta
+                azimuth = rel_theta - 2*np.pi if rel_theta > np.pi else rel_theta
                 elevation = rel_phi + 2*np.pi if rel_phi < 0. else rel_phi
 
                 self.send_to_with_rb(robot_id2, tmppackets, np.array(
