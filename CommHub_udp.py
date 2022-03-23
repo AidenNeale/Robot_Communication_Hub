@@ -7,7 +7,7 @@ from ArUcoTracker import ArUcoTracker
 from commhub import CommHub
 
 # Parameters for the Buzz ComHub
-FORWARD_FREQ = 50  # Hz
+FORWARD_FREQ = 500  # Hz
 
 # This is the IP address in which the Camera and Communication Hub are hosted
 SERVER_IP = '144.32.175.138'
