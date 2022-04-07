@@ -204,3 +204,6 @@ class CommHub:
       '''
       self.locs[int(robot_id)] = np.append(np.array(loc), yaw)
       # print("Robot {} pos {}".format(robot_id, self.locs[robot_id]))
+
+    def get_locations(self):
+      return self.locs
