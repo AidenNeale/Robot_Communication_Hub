@@ -45,12 +45,12 @@ class ArUcoTracker:
   }
 
   def __init__(self, arUco_type="DICT_5X5_50", HOST = '127.0.0.1', PORT = '4242',
-                    CHOSEN_CAMERA = 2, POSITION_MARKERS = 0, CommHub = None) -> None:
+                    CHOSEN_CAMERA = 2, POSITION_MARKERS = 0, commHub = None) -> None:
 
     self.CHOSEN_CAMERA = CHOSEN_CAMERA
     self.DESTINATION = (HOST, PORT)
     self.POSITION_MARKERS = POSITION_MARKERS
-    self.CommHub = CommHub
+    self.CommHub = commHub
     self.packets_lock = Lock()
 
     self.arucoDict = cv2.aruco.Dictionary_get(self.ARUCO_DICT[arUco_type])
