@@ -67,6 +67,14 @@ class graphMaker():
 
 
   def draw_graphs(self):
-    # print(self.X)
-    # print(self.Y)
+    plt.title('Test Graph')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+
+    plt.plot(self.time_axis, self.total_distance_axis, color='blue', linewidth=3)
+
+    plt.savefig('graphs/test1.png')
+
+    plt.show()
+
     pass
