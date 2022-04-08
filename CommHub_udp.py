@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
   graphs = graphMaker(commHub=comm_hub, frequency=1, experiment_length=10, num_robots=10)
 
-  time.sleep(0.25)
+  time.sleep(0.5)
   while graphs.gatherDataThread.is_alive():
     time.sleep(0.1)
   graphs.draw_graphs()
