@@ -19,7 +19,7 @@ if __name__ == '__main__':
   comm_hub = CommHub(forward_freq=FORWARD_FREQ, host=SERVER_IP, port=PORT)
   robotTracker = ArUcoTracker(HOST=SERVER_IP, PORT=PORT, commHub=comm_hub)
 
-  graphs = graphMaker(commHub=comm_hub, frequency=1, experiment_length=10)
+  graphs = graphMaker(commHub=comm_hub, frequency=1, experiment_length=10, num_robots=10)
 
   time.sleep(0.25)
   while graphs.gatherDataThread.is_alive():
