@@ -1,5 +1,7 @@
+import math
 import numpy as np
 import socket
+import random
 import time
 
 from collections import defaultdict
@@ -22,7 +24,9 @@ class CommHub:
     :param port: int. The port of the CommHub. PORT default is 8000
     '''
 
-    def __init__(self, forward_freq=None, neighbor_distance=1.7, host='144.32.175.138', port=4242):
+    def __init__(self, forward_freq=None, neighbor_distance=1.7, host='144.32.175.138', port=4242, position_altering_noise=False, scale=0.0):
+        self.position_altering_noise = position_altering_noise
+        self.scale = scale
         self.alive = True
         self.locs = {}  # comm_id : np.array()
         self.neighbor_distance = neighbor_distance
@@ -161,6 +165,29 @@ class CommHub:
         self.socket.sendto(msg, self.id2ip[destination])
 
 
+    def alter_position(self, rel_rb):
+      #Generate Random Vector of Magnitude and Bearing
+      random_noise_dist = np.random.normal(loc=0.0, scale=self.scale)
+      random_bearing = np.random.rand(-np.pi, np.pi)
+
+      #Transform from Magnitude and Bearing to Cartesian
+      real_x = rel_rb[0] * math.cos(rel_rb[1])
+      real_y = rel_rb[0] * math.sin(rel_rb[1])
+      real_vector = np.array([real_x, real_y])
+
+      #Transform from Magnitude and Bearing to Cartesian
+      noise_x = random_noise_dist * math.cos(random_bearing)
+      noise_y = random_noise_dist * math.sin(random_bearing)
+      noise_vector = np.array([noise_x, noise_y])
+
+      #Add Real and Noise Vector
+      new_vector = np.add(real_vector, noise_vector)
+
+      #Update Range and Bearing with new noisy position
+      rel_rb[0] = math.sqrt(math.pow(new_vector[0], 2), math.pow(new_vector[1], 2))
+      rel_rb[1] = math.acos(new_vector[0]/rel_rb[0])
+
+      return rel_rb
 
     def send_to_with_rb(self, destination, packets, rel_rb):
       '''
@@ -173,12 +200,14 @@ class CommHub:
       packets -> list of Packet Objects | Single Packet Object
         Contains information to forward to robots with structure found in packet.py
       rel_rb -> np.array
-        Array containing the Distance, Range and Bearing between the source and
+        Array containing the Range, Bearing and Elevation between the source and
         destination robot
       '''
       try:
         packets[0]
       except (AttributeError, TypeError):
+        if self.position_altering_noise:
+          rel_rb = self.alter_position(rel_rb)
         packets.set_rb(rel_rb[0], rel_rb[1], rel_rb[2])
         self.socket.sendto(packets.byte_string(), self.id2ip[destination])
         return
