@@ -18,11 +18,12 @@ PORT = 4242
 position_altering_noise = True
 num_robots = 8
 experiment_length = 45
-frequency=0.5
+frequency = 0.5
+standard_deviation = 0.0 # For the purpose of my experiments, this will be 1cm, 5cm, 10cm
 
 if __name__ == '__main__':
 
-  comm_hub = CommHub(forward_freq=FORWARD_FREQ, host=SERVER_IP, port=PORT, position_altering_noise=position_altering_noise)
+  comm_hub = CommHub(forward_freq=FORWARD_FREQ, host=SERVER_IP, port=PORT, position_altering_noise=position_altering_noise, scale=standard_deviation)
   robotTracker = ArUcoTracker(HOST=SERVER_IP, PORT=PORT, commHub=comm_hub)
 
   graphs = graphMaker(commHub=comm_hub, frequency=frequency, experiment_length=experiment_length, num_robots=num_robots)
