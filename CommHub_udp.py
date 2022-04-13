@@ -14,12 +14,18 @@ FORWARD_FREQ = 500  # Hz
 SERVER_IP = '144.32.175.138'
 PORT = 4242
 
+#Experiment/Data Collecting Variables
+position_altering_noise = True
+num_robots = 8
+experiment_length = 45
+frequency=0.5
+
 if __name__ == '__main__':
 
-  comm_hub = CommHub(forward_freq=FORWARD_FREQ, host=SERVER_IP, port=PORT)
+  comm_hub = CommHub(forward_freq=FORWARD_FREQ, host=SERVER_IP, port=PORT, position_altering_noise=position_altering_noise)
   robotTracker = ArUcoTracker(HOST=SERVER_IP, PORT=PORT, commHub=comm_hub)
 
-  graphs = graphMaker(commHub=comm_hub, frequency=0.5, experiment_length=45, num_robots=8)
+  graphs = graphMaker(commHub=comm_hub, frequency=frequency, experiment_length=experiment_length, num_robots=num_robots)
 
   time.sleep(0.5)
   while graphs.gatherDataThread.is_alive():
