@@ -19,7 +19,7 @@ position_altering_noise = True
 num_robots = 8
 experiment_length = 45
 frequency = 0.5
-standard_deviation = 0.0 # For the purpose of my experiments, this will be 1cm, 5cm, 10cm
+standard_deviation = 1.0 # For the purpose of my experiments, this will be 1cm, 5cm, 10cm
 
 if __name__ == '__main__':
 
