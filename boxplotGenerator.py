@@ -12,6 +12,7 @@ if __name__ == '__main__':
   # position_noise_data_1cm = numpy.genfromtxt('results/position_noise_data_1cm.csv', delimiter=',')
   # position_noise_data_5cm = numpy.genfromtxt('results/position_noise_data_5cm.csv', delimiter=',')
   # position_noise_data_10cm = numpy.genfromtxt('results/position_noise_data_10cm.csv', delimiter=',')
+  # position_noise_data_20cm = numpy.genfromtxt('results/position_noise_data_20cm.csv', delimiter=',')
 
 
   my_dict = {'Control': my_control_data,
