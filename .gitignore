@@ -1,6 +1,7 @@
-# Graphs/PNGS
+# Graphs/PNGS/Data
 graphs
 *.png
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
