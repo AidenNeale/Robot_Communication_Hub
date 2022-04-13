@@ -30,6 +30,7 @@ class graphMaker():
                     math.pow(saved_locations[comparison[0]][1] - saved_locations[comparison[1]][1], 2) +
                     math.pow(saved_locations[comparison[0]][2] - saved_locations[comparison[1]][2], 2))
 
+
   def write_to_csv(self, total_dist):
     with open(r'results/total_dist.csv', 'a') as file:
         writer = csv.writer(file)
