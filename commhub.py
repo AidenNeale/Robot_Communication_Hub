@@ -164,7 +164,7 @@ class CommHub:
 
     def send_to_with_rb(self, destination, packets, rel_rb):
       '''
-      Update a Robots Own Position by sending 'packets' to 'destination'
+      Update a Robots Position by sending 'packets' to 'destination'
 
       Parameters:
       -----------
