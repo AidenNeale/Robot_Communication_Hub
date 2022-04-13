@@ -65,7 +65,6 @@ class graphMaker():
           except:
             self.indiv_distance_axis[key] = [sum(indiv_distance[key])/(self.num_robots-1)]
 
-        print(self.indiv_distance_axis)
         self.time_axis.append(self.current_time)
         self.total_distance_axis.append(total_average_distance)
       except ZeroDivisionError:
@@ -74,6 +73,7 @@ class graphMaker():
       time.sleep(self.frequency)
       self.current_time += self.frequency
     self.write_to_csv([total_average_distance])
+    print("FINISHED!")
 
 
   def draw_graphs(self):
