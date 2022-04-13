@@ -168,7 +168,9 @@ class CommHub:
     def alter_position(self, rel_rb):
       #Generate Random Vector of Magnitude and Bearing
       random_noise_dist = np.random.normal(loc=0.0, scale=self.scale)
-      random_bearing = np.random.rand(-np.pi, np.pi)
+      random_bearing = random.randint(-180, 180)
+
+      random_bearing *= (math.pi / 180)
 
       #Transform from Magnitude and Bearing to Cartesian
       real_x = rel_rb[0] * math.cos(rel_rb[1])
@@ -184,7 +186,7 @@ class CommHub:
       new_vector = np.add(real_vector, noise_vector)
 
       #Update Range and Bearing with new noisy position
-      rel_rb[0] = math.sqrt(math.pow(new_vector[0], 2), math.pow(new_vector[1], 2))
+      rel_rb[0] = math.sqrt(math.pow(new_vector[0], 2) + math.pow(new_vector[1], 2))
       rel_rb[1] = math.acos(new_vector[0]/rel_rb[0])
 
       return rel_rb
@@ -206,13 +208,13 @@ class CommHub:
       try:
         packets[0]
       except (AttributeError, TypeError):
-        if self.position_altering_noise:
-          rel_rb = self.alter_position(rel_rb)
         packets.set_rb(rel_rb[0], rel_rb[1], rel_rb[2])
         self.socket.sendto(packets.byte_string(), self.id2ip[destination])
         return
 
       for packet in packets:
+        if self.position_altering_noise:
+          rel_rb = self.alter_position(rel_rb)
         packet.set_rb(rel_rb[0], rel_rb[1], rel_rb[2])
         msg = packet.byte_string()
         self.socket.sendto(msg, self.id2ip[destination])
