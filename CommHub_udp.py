@@ -15,7 +15,7 @@ SERVER_IP = '144.32.175.138'
 PORT = 4242
 
 #Experiment/Data Collecting Variables
-position_altering_noise = True
+position_altering_noise = False
 num_robots = 8
 experiment_length = 45
 frequency = 0.5
