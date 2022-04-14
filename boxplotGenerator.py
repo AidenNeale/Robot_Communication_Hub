@@ -24,7 +24,8 @@ if __name__ == '__main__':
   # my_dict = {'Control': my_control_data,
   #             'Position Noise 1cm std': position_noise_data_1cm,
   #             'Position Noise 5cm std': position_noise_data_5cm,
-  #             'Position Noise 10cm std': position_noise_data_10cm
+  #             'Position Noise 10cm std': position_noise_data_10cm,
+  #             'Position Noise 20cm std': position_noise_data_20cm
   #           }
 
   packet_loss_title = "Comparison showing Buzz's aggregation performance when experiencing packet loss"
@@ -36,6 +37,7 @@ if __name__ == '__main__':
   plt.xlabel('Experiments')
   plt.ylabel('Average Distance (m) after 45 time units')
   plt.xticks([1, 2, 3, 4], my_dict.keys())
+  # plt.xticks([1, 2, 3, 4, 5], my_dict.keys())
   plt.savefig('graphs/packet_loss_boxplots.png')
   plt.show()
   plt.clf()
